@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "version": "0.1",
+  "name": "XWeeder",
+  "description": "A browser extension that removes weed out of twitter feed",
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage", 
+    "webRequest", 
+    "activeTab", 
+    "tabs", 
+    "scripting"
+  ],
+  "host_permissions": ["*://x.com/*", "http://*/"]
+}
