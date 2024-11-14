@@ -1,69 +1,115 @@
 let session = null;
 
-let useOnce = false;
+const sessions = []; // Array to store sessions
+const PARALLEL_SESSIONS = 3; // Number of parallel sessions to create
+
 (async () => {
   const { available, defaultTemperature, defaultTopK, maxTopK } =
     await ai.languageModel.capabilities();
+
   if (available !== "no") {
-    session = await ai.languageModel.create({
-      systemPrompt:
-        "You are an AI assistant that specializes in identifying tweets discussing topics in engineering and computer science. When reading a tweet in english, determine if it discusses engineering or computer science concepts, developments, or issues.",
-    });
-    console.log("Model available: session created", session);
+    for (let i = 0; i < PARALLEL_SESSIONS; i++) {
+      const session = await ai.languageModel.create({
+        systemPrompt:
+          "You are an AI assistant that specializes in identifying tweets discussing topics in engineering and computer science. When reading a tweet in English, determine if it discusses engineering or computer science concepts, developments, or issues.",
+      });
+      sessions.push(session); // Add session to the array
+    }
   } else {
     console.log("Model not available");
   }
 })();
 
 async function processTweets() {
-  if (!session) {
-    console.log("Session not initialized yet.");
+  if (!sessions || sessions.length === 0) {
+    console.log("Sessions not initialized yet.");
     return;
   }
+
   // Select all article elements with `data-testid="tweet"` that haven't been processed
-  const tweetElements = document.querySelectorAll(
-    'article[data-testid="tweet"]:not([data-processed])'
-  );
 
-  for (const tweet of tweetElements) {
-    tweet.setAttribute("data-processed", "true");
+  const tweetElements = Array.from(
+    document.querySelectorAll('article[data-testid="tweet"][data-processed]')
+  )
+    .filter((tweet) => tweet.getAttribute("data-processed") === "false")
+    .concat(
+      Array.from(
+        document.querySelectorAll(
+          'article[data-testid="tweet"]:not([data-processed])'
+        )
+      )
+    );
+  console.log("Tweets to process:", tweetElements.length);
 
-    // Find the tweetText element within each tweet
-    const tweetTextElement = tweet.querySelector('[data-testid="tweetText"]');
+  // Slice the first PARALLEL_SESSIONS tweets and remove them from `tweetElements`
+  const batch = tweetElements.splice(0, PARALLEL_SESSIONS);
 
-    if (tweetTextElement) {
-      try {
-        // Ensure `session` is initialized before making a prompt call
-        console.log(tweetTextElement.textContent);
-        if (useOnce) return;
-        useOnce = true;
-        const promptText = `ACCEPTING ${tweetTextElement.textContent} - does it talk about computer science? answer in yes or no with reasoning.`;
-        const stream = await session.promptStreaming(promptText);
-        console.log("prmpt", promptText);
-        for await (const chunk of stream) {
-          fullResponse = chunk.trim();
-          console.log("fullResponse", fullResponse, promptText);
-          if (
-            fullResponse.toLowerCase().includes("yes") ||
-            fullResponse.toLowerCase().includes("no")
-          ) {
-            // stop the stream
-            console.log(promptText, fullResponse, "breaking");
-            break;
+  // Process each tweet in the batch with a different session
+  await Promise.all(
+    batch.map(async (tweet, index) => {
+      const session = sessions[index % sessions.length];
+      tweet.setAttribute("data-processed", "true");
+
+      const tweetTextElement = tweet.querySelector('[data-testid="tweetText"]');
+      if (tweetTextElement) {
+        try {
+          const promptText = `${tweetTextElement.textContent} - does it talk about computer science? Answer in yes or no with reasoning.`;
+          console.log("Prompt:", promptText);
+
+          const stream = await session.promptStreaming(promptText);
+
+          let fullResponse = "";
+          for await (const chunk of stream) {
+            fullResponse += chunk.trim();
+            if (
+              fullResponse.toLowerCase().includes("yes") ||
+              fullResponse.toLowerCase().includes("no")
+            ) {
+              // delete the tweet
+              if (fullResponse.toLowerCase().includes("no")) {
+                console.log(
+                  "Response:",
+                  tweetTextElement.textContent.slice(0, 15),
+                  fullResponse,
+                  "no"
+                );
+                tweet.style.display = "none";
+              }
+              console.log(
+                "Response:",
+                tweetTextElement.textContent.slice(0, 15),
+                fullResponse,
+                "yes"
+              );
+
+              break; // Stop processing once an answer is found
+            }
           }
+        } catch (error) {
+          console.error("Error processing tweet:", error);
+          tweet.setAttribute("data-processed", "false");
         }
-      } catch (error) {
-        console.error("Error processing tweet:", error);
+      } else {
+        tweet.remove();
+        console.log("delete this"); // No tweetText element found
       }
-    } else {
-      // If no tweetText element is found, print "delete this"
-      console.log("delete this");
-    }
-  }
+    })
+  );
 }
 
+// Debounce the processTweets call on scroll
+let debounceTimeout;
+window.addEventListener(
+  "scroll",
+  () => {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(processTweets, 1000); // Adjust delay as needed
+  },
+  false
+);
+
 // Attach the scroll event listener to process tweets on scroll
-window.addEventListener("scroll", processTweets, false);
+// window.addEventListener("scroll", processTweets, false);
 
 // Process tweets initially when the script runs
 processTweets();
