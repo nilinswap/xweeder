@@ -15,5 +15,7 @@ This helps keep your x feed free of random content other than one you asked for.
 
 - After using a pool of opened sessions with window.ai I was able to get across abortError and was able to see some results but after a few scrolls, it was crashing. 
     - Reason1 - Too many scroll events (upto 100 for every second of scroll) calling prompt api too often. Solution? -> debounced the scroll event action
-    - Reason2 - Some tweets were getting skipped from processing. that's because Invariably some prompt calls were failing with abortError: The request was cancelled. and `UnknownError: Other generic failures occurred.`, so that I should be able to process those tweets again, I was setting data-processed attribute as "false" and hoped querySelector will pick these again for processing but for that query selector needed to be changed. As a result same tweets were being processed even when I am scro
+    - Reason2 - Some tweets were getting skipped from processing. that's because Invariably some prompt calls were failing with abortError: The request was cancelled. and `UnknownError: Other generic failures occurred.`, so that I should be able to process those tweets again, I was setting data-processed attribute as "false" and hoped querySelector will pick these again for processing but for that query selector needed to be changed. As a result same tweets were being processed even when I am scrolling down
+    solution? I changed the query selector
+- I did two things to remove errors completely, I changed from m1 air 8gb to m3 pro 36 gb and secondly, I started creating sessions inside the eventHandler so that they get destroyed as a result. Although, it was still leading to crashes but that is after processing much more content. 
 

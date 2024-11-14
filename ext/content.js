@@ -1,9 +1,10 @@
 let session = null;
 
-const sessions = []; // Array to store sessions
 const PARALLEL_SESSIONS = 3; // Number of parallel sessions to create
 
-(async () => {
+async function processTweets() {
+  const sessions = []; // Array to store sessions
+
   const { available, defaultTemperature, defaultTopK, maxTopK } =
     await ai.languageModel.capabilities();
 
@@ -18,9 +19,6 @@ const PARALLEL_SESSIONS = 3; // Number of parallel sessions to create
   } else {
     console.log("Model not available");
   }
-})();
-
-async function processTweets() {
   if (!sessions || sessions.length === 0) {
     console.log("Sessions not initialized yet.");
     return;
