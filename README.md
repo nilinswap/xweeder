@@ -17,5 +17,9 @@ This helps keep your x feed free of random content other than one you asked for.
     - Reason1 - Too many scroll events (upto 100 for every second of scroll) calling prompt api too often. Solution? -> debounced the scroll event action
     - Reason2 - Some tweets were getting skipped from processing. that's because Invariably some prompt calls were failing with abortError: The request was cancelled. and `UnknownError: Other generic failures occurred.`, so that I should be able to process those tweets again, I was setting data-processed attribute as "false" and hoped querySelector will pick these again for processing but for that query selector needed to be changed. As a result same tweets were being processed even when I am scrolling down
     solution? I changed the query selector
-- I did two things to remove errors completely, I changed from m1 air 8gb to m3 pro 36 gb and secondly, I started creating sessions inside the eventHandler so that they get destroyed as a result. Although, it was still leading to crashes but that is after processing much more content. 
+- I did two things to remove errors completely, I changed from m1 air 8gb to m3 pro 36 gb and secondly, I started creating sessions inside the eventHandler so that they get destroyed as a result. Although, it was still leading to crashes but that is after processing much more content.
+- It stopped crashing after I started destroying the session as prompts were generated. (as a pretext - I had always been cutting prompt in the middle as soon as I get an answer to delete a post or not (instead of letting it finish its statement)) It started working with 5 parallel sessions now. As a result, it is now working seamless. 
+- Sometimes it felt like it is deleting "tech" posts too. but that was as I was deleting the component (or effectively, by display:none) and it was shifting up. Instead I started blurring and it works fine. 
+- I suspect it is still deleting some of the useful tweets. I need to look into that. 
+
 

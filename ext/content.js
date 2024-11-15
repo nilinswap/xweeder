@@ -1,6 +1,6 @@
 let session = null;
 
-const PARALLEL_SESSIONS = 3; // Number of parallel sessions to create
+const PARALLEL_SESSIONS = 5; // Number of parallel sessions to create
 
 async function processTweets() {
   const sessions = []; // Array to store sessions
@@ -52,7 +52,6 @@ async function processTweets() {
       if (tweetTextElement) {
         try {
           const promptText = `${tweetTextElement.textContent} - does it talk about computer science? Answer in yes or no with reasoning.`;
-          console.log("Prompt:", promptText);
 
           const stream = await session.promptStreaming(promptText);
 
@@ -71,15 +70,16 @@ async function processTweets() {
                   fullResponse,
                   "no"
                 );
-                tweet.style.display = "none";
+                tweet.style.filter = "blur(20px)";
+              } else {
+                console.log(
+                  "Response:",
+                  tweetTextElement.textContent.slice(0, 15),
+                  fullResponse,
+                  "yes"
+                );
               }
-              console.log(
-                "Response:",
-                tweetTextElement.textContent.slice(0, 15),
-                fullResponse,
-                "yes"
-              );
-
+              session.destroy();
               break; // Stop processing once an answer is found
             }
           }
