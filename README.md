@@ -21,5 +21,20 @@ This helps keep your x feed free of random content other than one you asked for.
 - It stopped crashing after I started destroying the session as prompts were generated. (as a pretext - I had always been cutting prompt in the middle as soon as I get an answer to delete a post or not (instead of letting it finish its statement)) It started working with 5 parallel sessions now. As a result, it is now working seamless. 
 - Sometimes it felt like it is deleting "tech" posts too. but that was as I was deleting the component (or effectively, by display:none) and it was shifting up. Instead I started blurring and it works fine. 
 - I suspect it is still deleting some of the useful tweets. I need to look into that. 
+    - it is unable to identify some posts despite them being about tech clearly. e.g. it can't identify "Gemini" is a thing in AI. That's blasphemy
 
+- For the purpose of this extension, if postive means deleted. False Positive is ok. but not False negatives. And even in false positive being ok. 
+
+
+# TODO
+[] Fix accuracy problems
+[] Don't delete
+    - posts which are not recommended (of our followers)
+    - if text of an enclosed retweet is mentiont tech
+[] Ignore processing posts which are scrolled down. 
+
+- Post partial success
+- Post upcoming features
+- Post final success
+- Video to submit
 

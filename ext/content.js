@@ -1,6 +1,6 @@
 let session = null;
 
-const PARALLEL_SESSIONS = 5; // Number of parallel sessions to create
+const PARALLEL_SESSIONS = 10; // Number of parallel sessions to create
 
 async function processTweets() {
   const sessions = []; // Array to store sessions
@@ -12,7 +12,7 @@ async function processTweets() {
     for (let i = 0; i < PARALLEL_SESSIONS; i++) {
       const session = await ai.languageModel.create({
         systemPrompt:
-          "You are an AI assistant that specializes in identifying tweets discussing topics in engineering and computer science. When reading a tweet in English, determine if it discusses engineering or computer science concepts, developments, or issues.",
+          "You are an content inspector that specializes in identifying tweets which discuss about anything related to science or business.\n",
       });
       sessions.push(session); // Add session to the array
     }
@@ -51,38 +51,36 @@ async function processTweets() {
       const tweetTextElement = tweet.querySelector('[data-testid="tweetText"]');
       if (tweetTextElement) {
         try {
-          const promptText = `${tweetTextElement.textContent} - does it talk about computer science? Answer in yes or no with reasoning.`;
+          const promptText = `${tweetTextElement.textContent} - Is this a tweet about topic related to science or business directly? Answer in yes or no with reasoning. Answer should be yes even if it is an opinion, if it is not relevant and it is not meaningful`;
 
           const stream = await session.promptStreaming(promptText);
 
           let fullResponse = "";
+          let answer = "";
           for await (const chunk of stream) {
-            fullResponse += chunk.trim();
+            fullResponse = chunk.trim();
             if (
-              fullResponse.toLowerCase().includes("yes") ||
-              fullResponse.toLowerCase().includes("no")
+              fullResponse.toLowerCase().startsWith("yes") ||
+              fullResponse.toLowerCase().startsWith("no")
             ) {
               // delete the tweet
               if (fullResponse.toLowerCase().includes("no")) {
-                console.log(
-                  "Response:",
-                  tweetTextElement.textContent.slice(0, 15),
-                  fullResponse,
-                  "no"
-                );
-                tweet.style.filter = "blur(20px)";
+                answer = "no";
+                tweet.style.filter = "blur(1.5px)";
               } else {
-                console.log(
-                  "Response:",
-                  tweetTextElement.textContent.slice(0, 15),
-                  fullResponse,
-                  "yes"
-                );
+                answer = "yes";
               }
               session.destroy();
               break; // Stop processing once an answer is found
             }
           }
+
+          console.log(
+            "Response:",
+            tweetTextElement.textContent.length,
+            tweetTextElement.textContent,
+            fullResponse          
+          );
         } catch (error) {
           console.error("Error processing tweet:", error);
           tweet.setAttribute("data-processed", "false");
@@ -101,7 +99,7 @@ window.addEventListener(
   "scroll",
   () => {
     clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(processTweets, 1000); // Adjust delay as needed
+    debounceTimeout = setTimeout(processTweets, 500); // Adjust delay as needed
   },
   false
 );
