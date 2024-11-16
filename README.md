@@ -23,18 +23,26 @@ This helps keep your x feed free of random content other than one you asked for.
 - I suspect it is still deleting some of the useful tweets. I need to look into that. 
     - it is unable to identify some posts despite them being about tech clearly. e.g. it can't identify "Gemini" is a thing in AI. That's blasphemy
 
-- For the purpose of this extension, if postive means deleted. False Positive is ok. but not False negatives. And even in false positive being ok. 
+- For the purpose of this extension, if postive means deleted. False Positive is ok. but not False negatives.
+
+- Some prompting lessons I learnt
+    - Initially, I was pumping a lot of statements in my prompts. They were too long so shorting it helped and it seems that SLM tend to lose context if the prompts are too long. - SOLVED
+        - Old Session Prompt - "You are an AI assistant that specializes in identifying tweets discussing topics in engineering and computer science. When reading a tweet in english, determine if it discusses engineering or computer science concepts, developments, or issues."
+        - New Session Prompt - "You are an content inspector that specializes in identifying tweets which discuss about anything related to science or business."
+    - For most Twitter posts on tech or business, model was marking them to be deleted saying "though, it talks about tech, it doesn't provide data or evidence" or "it merely touches on the topic but there is nothing meaningful stated"
+        - Old Prompt - Is this discussing about science or business? Answer in yes or no with reasoning.
+        - New Prompt - Is this a tweet about topic related to science or business directly? Answer in yes or no with reasoning. Answer should be yes even if it is an opinion, if it is not relevant and it is not meaningful.
+    - It is still facing the problem of promt-injection attack. e.g. if there is a shitty post with a meme and a caption "This surely is a true statement", it says yes. 
+
+
 
 
 # TODO
-[] Fix accuracy problems
 [] Don't delete
     - posts which are not recommended (of our followers)
-    - if text of an enclosed retweet is mentiont tech
-[] Ignore processing posts which are scrolled down. 
+    - if there is an enclosed tweet (i.e. reshare), ignore caption and read the enclosed tweet's text
+[] Ignore processing posts which are scrolled down.
 
-- Post partial success
 - Post upcoming features
 - Post final success
 - Video to submit
-
